@@ -1,63 +1,49 @@
 from app.db.session import SessionLocal
-from app.db.models.user import User
-from app.db.models.role import Role
-from app.db.models.department import Department
-from app.core.security import get_password_hash
+from app.schemas.user import UserCreate
+from app.services.user_service import user_service
 
 
-db = SessionLocal()
+def create_test_users():
+    db = SessionLocal()
 
-try:
-    # Find Admin role
-    admin_role = db.query(Role).filter(Role.name == "Admin").first()
+    try:
+        users = [
+            UserCreate(
+                name="Test Manager",
+                email="manager@test.com",
+                password="Manager@123",
+                department_id=1,
+                role_id=2,
+            ),
+            UserCreate(
+                name="Test Employee",
+                email="employee@test.com",
+                password="Employee@123",
+                department_id=1,
+                role_id=3,
+            ),
+        ]
 
-    if admin_role is None:
-        print("ERROR: Admin role not found.")
-        print("Available roles:")
-        for role in db.query(Role).all():
-            print(role.id, role.name)
-        raise SystemExit
+        for user_data in users:
+            try:
+                user = user_service.create_user(
+                    db,
+                    user_data
+                )
 
-    # Find an existing department
-    department = db.query(Department).first()
+                print(
+                    f"Created: {user.email} "
+                    f"(ID={user.id}, role_id={user.role_id})"
+                )
 
-    if department is None:
-        print("ERROR: No department found.")
-        raise SystemExit
+            except Exception as e:
+                print(
+                    f"Skipped {user_data.email}: {e}"
+                )
 
-    email = "admin@test.com"
-    password = "Admin@123"
+    finally:
+        db.close()
 
-    # Check whether user already exists
-    existing_user = (
-        db.query(User)
-        .filter(User.email == email)
-        .first()
-    )
 
-    if existing_user:
-        print("Test user already exists.")
-        print("User ID:", existing_user.id)
-        print("Email:", existing_user.email)
-        print("Role:", existing_user.role.name)
-    else:
-        user = User(
-            name="Test Admin",
-            email=email,
-            password=get_password_hash(password),
-            department_id=department.id,
-            role_id=admin_role.id,
-        )
-
-        db.add(user)
-        db.commit()
-        db.refresh(user)
-
-        print("Test Admin created successfully!")
-        print("User ID:", user.id)
-        print("Email:", email)
-        print("Password:", password)
-        print("Role:", admin_role.name)
-
-finally:
-    db.close()
+if __name__ == "__main__":
+    create_test_users()
