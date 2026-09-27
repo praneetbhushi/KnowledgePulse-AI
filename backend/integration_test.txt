@@ -1,0 +1,7 @@
+KnowledgePulse AI Integration Test
+
+KnowledgePulse AI is an enterprise knowledge intelligence platform.
+
+The system uses FastAPI, PostgreSQL, SQLAlchemy, ChromaDB, embeddings, semantic search, and Retrieval Augmented Generation.
+
+The platform supports document processing, document classification, quality scoring, duplicate detection, semantic search, AI chat, conversation history, analytics, and knowledge health monitoring.
